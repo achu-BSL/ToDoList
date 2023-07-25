@@ -21,9 +21,8 @@ export const createTodo: RequestHandler = async (req, res, next) => {
     try {
         const {text} = (req.body as {text: string});
         const newTodo: Todo = {text};
-        await TodoModel.create(newTodo);
-    
-        res.status(201).send(`Created ${text}`);
+        const todo = await TodoModel.create(newTodo);
+        res.status(201).send(todo);
     } catch (err) {
       next(err);  
     }
@@ -42,6 +41,21 @@ export const updateTodo: RequestHandler =   async (req, res, next) => {
         next(err);
     }
 }
+
+
+//localhost:5000/todo/update/status/:id
+//Method PUT
+export const updateTodoStatus: RequestHandler =   async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const {newStatus} = (req.body as {newStatus: 'Completed' | 'Pending'});
+        await TodoModel.updateOne({_id: id}, {$set: {isCompleted: newStatus === 'Completed'}});
+        res.status(200).send(`Updated Successfully..`);
+    } catch (err) {
+        next(err);
+    }
+}
+
 
 
 //localhost:5000/todo/delete/:id
