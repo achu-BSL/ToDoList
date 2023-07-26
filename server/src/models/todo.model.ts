@@ -1,22 +1,44 @@
-import mongoose, {Document, Schema, Model} from 'mongoose';
+import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface Todo {
-    text: string;
-    isCompleted?: boolean;
+    todos: [{
+        text: string;
+        isCompleted?: boolean;
+        id: string;
+    }],
+    categoryName: string;
+    category_id: string;
 }
 
-interface TodoDocument extends Document, Todo {}
+interface TodoDocument extends Document, Todo { }
 
-const todoSchema: Schema<TodoDocument>  = new Schema({
-    text: {
+const todoSchema: Schema<TodoDocument> = new Schema({
+    todos: [{
+        text: {
+            type: String,
+        },
+        isCompleted: {
+            type: Boolean,
+            default: false
+        },
+        id: {
+            type: String,
+            required: true,
+            unique: true
+        }
+    }],
+    categoryName: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
-    isCompleted: {
-        type: Boolean,
-        default: false
+    category_id: {
+        type: String,
+        required: true,
+        indexes: true,
+        unique: true
     }
-});
+},);
 
 const TodoModel: Model<TodoDocument> = mongoose.model<TodoDocument>('Todos', todoSchema);
 

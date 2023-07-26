@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 
-import { connect } from './database/connect.db';
-import router from './routes/todo.route';
-import { errorHandler } from './middleware/errorHandler.midleware';
+import { connect } from './database/connect.db.js';
+import router from './routes/todo.route.js';
+import { errorHandler } from './middleware/errorHandler.midleware.js';
 
 const app: express.Application = express();
 

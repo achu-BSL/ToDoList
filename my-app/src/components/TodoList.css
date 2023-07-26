@@ -15,3 +15,17 @@ li {
   justify-content: space-between;
   align-items: center;
 }
+
+li div {
+  display: flex;
+}
+
+.completed {
+  background-color: rgba(209, 255, 209, 0.464);
+  border: 1px solid green;
+}
+
+.pending {
+  background-color: rgba(173, 216, 230, 0.633);
+  border: 1px solid blue;
+}
