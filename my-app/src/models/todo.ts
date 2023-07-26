@@ -3,3 +3,11 @@ export interface Todo {
     text: string;
     isCompleted: boolean;
 }
+
+
+export interface TodoCategory {
+    [key: string]: {
+        todos: Todo[],
+        id: string;
+    }
+}

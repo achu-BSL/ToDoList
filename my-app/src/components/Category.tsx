@@ -9,18 +9,20 @@ import NewTodo from "./NewTodo";
 
 
 interface CategoryProps {
-    addTodo: (text: string) => void;
+    addTodo: (category: string, text: string) => void;
     items: Todo[];
-    onStatusUpdate: (todoId: string, status: 'Completed' | 'Pending') => void;
-    onDelete: (todoId: string) => void;
+    onStatusUpdate: (category: string, todoId: string, status: 'Completed' | 'Pending') => void;
+    onDelete: (category: string, todoId: string) => void;
+    categoryName: string;
 }
 
 const Category: React.FC<CategoryProps> = (props) => {
     return (
-        <div>
-            <NewTodo addTodo={props.addTodo}/>
+        <div className="category-container">
+            <h3 className="category-title">{props.categoryName}</h3>
+            <NewTodo addTodo={props.addTodo.bind(null, props.categoryName)}/>
             <div>
-                <TodoList items={props.items} onStatusUpdate={props.onStatusUpdate} onDelteTodo={props.onDelete}/>
+                <TodoList items={props.items} onStatusUpdate={props.onStatusUpdate.bind(null, props.categoryName)} onDelteTodo={props.onDelete.bind(null, props.categoryName)}/>
             </div>
         </div>
     );

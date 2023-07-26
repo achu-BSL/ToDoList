@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
 
+import { NewCategory } from './NewCategory';
 import Category from "./Category";
 
 import { Todo } from "../models/todo";
+import { TodoCategory } from "../models/todo";
+
+
+
 
 export const CategoryList: React.FC = () => {
 
-    const [todoState, setTodoState] = useState<Todo[]>([]);
+    const [todoState, setTodoState] = useState<TodoCategory>({});
 
     useEffect(() => {
         const url = 'http://localhost:5000/gettodos';
@@ -14,10 +19,17 @@ export const CategoryList: React.FC = () => {
             try {
                 const res = await fetch(url, { method: 'GET' });
                 if (res.ok) {
-                    const data: { text: string, _id: string, isCompleted: boolean }[] = await res.json();
-                    setTodoState(prevTodos => data.map(todo => {
-                        return { text: todo.text, id: todo._id, isCompleted: todo.isCompleted };
-                    }))
+                    const data: { todos: Todo[], categoryName: string, category_id: string }[] = await res.json();
+                    setTodoState(prevTodos => {
+                        const todos: TodoCategory = {};
+                        data.forEach(todo => {
+                            todos[`${todo.categoryName}`] = {
+                                todos: todo.todos,
+                                id: todo.category_id
+                            }
+                        })
+                        return todos;
+                    })
                 }
             } catch (err) {
                 console.log(err);
@@ -27,9 +39,9 @@ export const CategoryList: React.FC = () => {
     }, []);
 
 
-    const todoAddHandler = async (text: string) => {
-
-        const url = 'http://localhost:5000/todo/create';
+    const todoAddHandler = async (categoryName: string, text: string) => {
+        console.log("hi");
+        const url = `http://localhost:5000/todo/add/${categoryName}`;
         const body = { text };
         const res = await fetch(url, {
             method: 'POST',
@@ -40,24 +52,34 @@ export const CategoryList: React.FC = () => {
         })
 
         if (res.ok) {
-            const todoData: { _id: string } = await res.json();
-            const newTodo: Todo = {
+            const todoData: { id: string } = await res.json();
+            const newTodo = {
                 text,
-                id: todoData._id,
-                isCompleted: false
+                id: todoData.id,
+                isCompleted: false,
             }
-            setTodoState(prevTodods => [...prevTodods, newTodo]);
+            setTodoState(prevTodos => {
+                const updatedState = { ...prevTodos };
+                console.log(updatedState[categoryName].todos.length);
+                updatedState[categoryName].todos.push(newTodo);
+                console.log(updatedState[categoryName].todos.length);
+                return updatedState;
+            });
         }
         else console.log("Opps something wrong..");
     }
 
-    const todoDeleteHandler = async (todoId: string) => {
-        const url = `http://localhost:5000/todo/delete/${todoId}`;
+    const todoDeleteHandler = async (category: string, todoId: string) => {
+        const url = `http://localhost:5000/todo/delete/${category}/${todoId}`;
         const res = await fetch(url, {
             method: 'DELETE'
         })
         if (res.ok) {
-            setTodoState(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
+            setTodoState(prevTodos => {
+                const updatedState = {...prevTodos}
+                updatedState[category].todos = updatedState[category].todos.filter(todo => todo.id !== todoId);
+                return updatedState;
+            });
             console.log("Deleted Successfully...");
         }
         else {
@@ -66,36 +88,64 @@ export const CategoryList: React.FC = () => {
     }
 
 
-    const todoStatusUpdate = async (todoId: string, status: 'Completed' | 'Pending') => {
-        const url = `http://localhost:5000/todo/update/status/${todoId}`;
+    const todoStatusUpdate = async (category: string, todoId: string, status: 'Completed' | 'Pending') => {
+        const url = `http://localhost:5000/todo/update/status/${category}/${todoId}`;
         const res = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          }, 
-          body: JSON.stringify({newStatus: status})
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ newStatus: status })
         })
-      
-        if(res.ok) {
-          setTodoState(prevTodos => prevTodos.map(todo => {
-            if(todo.id === todoId) {
-              return {id: todo.id, text: todo.text, isCompleted: status === 'Completed'}
-            }
-            return todo;
-          }))
+
+        if (res.ok) {
+            setTodoState(prevTodos => { 
+                const updatedState = {...prevTodos};
+                updatedState[category].todos = updatedState[category].todos.map(todo => {
+                    if(todo.id === todoId) {
+                        todo.isCompleted = status === 'Completed';
+                    }
+                    return todo;
+                })
+                return updatedState;
+            })
         } else console.log("OPPS Something wrong");
-      }
-      
+    }
+
+    const categoryAddHandler = async (category: string) => {
+        const url = 'http://localhost:5000/category/create';
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ categoryname: category })
+        })
+        if(res.ok) {
+            const newCategory: {category_id: string} = await res.json();
+            setTodoState(prevTodos => {
+                const updatedTodoState = {...prevTodos}
+                updatedTodoState[category] = {todos: [], id: newCategory.category_id}
+                return updatedTodoState;
+            })
+        }
+    }
 
 
     return (
         <div>
-            <Category 
-            addTodo={todoAddHandler} 
-            items={todoState} 
-            onStatusUpdate={todoStatusUpdate}
-            onDelete={todoDeleteHandler}
-            />
+            <NewCategory onAdd={categoryAddHandler} />
+            {Object.keys(todoState).map((todo: keyof typeof todoState) =>
+                <>
+                    <Category key={todoState[todo].id}
+                        addTodo={todoAddHandler}
+                        items={todoState[todo].todos}
+                        onStatusUpdate={todoStatusUpdate}
+                        onDelete={todoDeleteHandler}
+                        categoryName={todo as string}
+                    />
+                </>
+            )}
         </div>
     );
 }

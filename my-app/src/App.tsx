@@ -6,7 +6,6 @@ import { Todo } from './models/todo';
 
 //importing components
 import { CategoryList } from './components/CategoryList';
-import { NewCategory } from './components/NewCategory';
 
 
 const App: React.FC = () => {
@@ -15,14 +14,11 @@ const App: React.FC = () => {
 
 
 
-  const categoryAddHandler = (category: string) => {
-    setCategories(prevCategories => [...prevCategories, /*add new category here*/])
-  }
+
 
   return (
     <div className='app'>
       <h1>TODO</h1>
-      <NewCategory onAdd={categoryAddHandler} />
       <CategoryList />
     </div>
   )

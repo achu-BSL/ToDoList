@@ -1,6 +1,14 @@
 import { RequestHandler } from "express";
+import {customAlphabet} from "nanoid";
 
-import TodoModel, {Todo} from "../models/todo.model";
+import TodoModel from "../models/todo.model.js";
+
+//for generate custom nano id
+const generateId = ()=> {
+    const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTVWXYZabcdefghijklmnopqrstvwxyz';
+    const idLength = 10;
+    return customAlphabet(alphabet, idLength)();
+}
 
 
 //localhost:5000/gettodos
@@ -15,14 +23,18 @@ export const getTodos: RequestHandler = async (_req, res, next)=> {
 }
 
 
-//localshot:5000/todo/create
+//localshot:5000/todo/add/:categoryname
 //Method POST
-export const createTodo: RequestHandler = async (req, res, next) => {
+export const addTodo: RequestHandler = async (req, res, next) => {
     try {
+        const {categoryname} = req.params;
         const {text} = (req.body as {text: string});
-        const newTodo: Todo = {text};
-        const todo = await TodoModel.create(newTodo);
-        res.status(201).send(todo);
+
+        const id = generateId();
+
+        const newTodo = {text, id};
+        await TodoModel.updateOne({categoryName: categoryname}, {$push: {todos: newTodo}});
+        res.status(201).send({...newTodo, isCompleted: false});
     } catch (err) {
       next(err);  
     }
@@ -43,13 +55,13 @@ export const updateTodo: RequestHandler =   async (req, res, next) => {
 }
 
 
-//localhost:5000/todo/update/status/:id
+//localhost:5000/todo/update/status/:categoryname/:id
 //Method PUT
 export const updateTodoStatus: RequestHandler =   async (req, res, next) => {
     try {
-        const {id} = req.params;
+        const {id, categoryname} = req.params;
         const {newStatus} = (req.body as {newStatus: 'Completed' | 'Pending'});
-        await TodoModel.updateOne({_id: id}, {$set: {isCompleted: newStatus === 'Completed'}});
+        await TodoModel.updateOne({categoryName: categoryname, 'todos.id': id}, {$set: {'todos.$.isCompleted': newStatus === 'Completed'}});
         res.status(200).send(`Updated Successfully..`);
     } catch (err) {
         next(err);
@@ -58,14 +70,31 @@ export const updateTodoStatus: RequestHandler =   async (req, res, next) => {
 
 
 
-//localhost:5000/todo/delete/:id
+//localhost:5000/todo/delete/:categoryname/:id
 //Method DELETE
 export const deleteTodo: RequestHandler = async (req, res, next)=> {
     try {
-        const {id} = req.params;
-        await TodoModel.deleteOne({_id: id});
+        const {id, categoryname} = req.params;
+        await TodoModel.updateOne({categoryName: categoryname}, {$pull: {todos: {id}}})
         res.status(200).send(`Deleted Successfully..`);
     } catch (err) {
+        console.log(err);
+        next(err);
+    }
+}
+
+
+//localshot:5000/category/add
+//Method PUT
+
+export const createCategory: RequestHandler = async (req, res, next) => {
+    try {
+        const {categoryname} = req.body;
+        const id = generateId();
+        const category = await TodoModel.create({category_id: id, categoryName: categoryname});
+        res.status(201).json(category);
+    } catch (err) {
+        console.log(err);
         next(err);
     }
 }
