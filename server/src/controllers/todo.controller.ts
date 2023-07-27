@@ -85,7 +85,7 @@ export const deleteTodo: RequestHandler = async (req, res, next)=> {
 
 
 //localshot:5000/category/add
-//Method PUT
+//Method POST
 
 export const createCategory: RequestHandler = async (req, res, next) => {
     try {
@@ -95,6 +95,20 @@ export const createCategory: RequestHandler = async (req, res, next) => {
         res.status(201).json(category);
     } catch (err) {
         console.log(err);
+        next(err);
+    }
+}
+
+
+//localhost:5000/category/edit/:categoryname
+//Method POST
+export const editCategory: RequestHandler = async (req, res, next)=> {
+    try {
+        const {categoryname} = req.params;
+        const {newCategoryName} = req.body;
+        await TodoModel.updateOne({categoryName: categoryname}, {$set: {categoryName: newCategoryName}});
+        res.status(200).json("Category updated...");
+    } catch (err) {
         next(err);
     }
 }

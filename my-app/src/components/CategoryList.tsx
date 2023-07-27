@@ -40,7 +40,6 @@ export const CategoryList: React.FC = () => {
 
 
     const todoAddHandler = async (categoryName: string, text: string) => {
-        console.log("hi");
         const url = `http://localhost:5000/todo/add/${categoryName}`;
         const body = { text };
         const res = await fetch(url, {
@@ -58,9 +57,9 @@ export const CategoryList: React.FC = () => {
                 id: todoData.id,
                 isCompleted: false,
             }
+
             setTodoState(prevTodos => {
                 const updatedState = { ...prevTodos };
-                console.log(updatedState[categoryName].todos.length);
                 updatedState[categoryName].todos.push(newTodo);
                 console.log(updatedState[categoryName].todos.length);
                 return updatedState;
@@ -76,7 +75,7 @@ export const CategoryList: React.FC = () => {
         })
         if (res.ok) {
             setTodoState(prevTodos => {
-                const updatedState = {...prevTodos}
+                const updatedState = { ...prevTodos }
                 updatedState[category].todos = updatedState[category].todos.filter(todo => todo.id !== todoId);
                 return updatedState;
             });
@@ -99,10 +98,10 @@ export const CategoryList: React.FC = () => {
         })
 
         if (res.ok) {
-            setTodoState(prevTodos => { 
-                const updatedState = {...prevTodos};
+            setTodoState(prevTodos => {
+                const updatedState = { ...prevTodos };
                 updatedState[category].todos = updatedState[category].todos.map(todo => {
-                    if(todo.id === todoId) {
+                    if (todo.id === todoId) {
                         todo.isCompleted = status === 'Completed';
                     }
                     return todo;
@@ -115,36 +114,66 @@ export const CategoryList: React.FC = () => {
     const categoryAddHandler = async (category: string) => {
         const url = 'http://localhost:5000/category/create';
         const res = await fetch(url, {
-            method: 'PUT',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ categoryname: category })
         })
-        if(res.ok) {
-            const newCategory: {category_id: string} = await res.json();
+        if (res.ok) {
+            const newCategory: { category_id: string } = await res.json();
             setTodoState(prevTodos => {
-                const updatedTodoState = {...prevTodos}
-                updatedTodoState[category] = {todos: [], id: newCategory.category_id}
+                const updatedTodoState = { ...prevTodos }
+                updatedTodoState[category] = { todos: [], id: newCategory.category_id }
                 return updatedTodoState;
             })
         }
     }
 
 
+    const editCategoryNameHandler = async (categoryName: string, newCategoryName: string) => {
+        const url = `http://localhost:5000/category/edit/${categoryName}`;
+        const res = await fetch(url, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({newCategoryName})
+        })
+        if(res.ok) {
+            setTodoState(prevTodos => {
+                // const updatedState = {...prevTodos};
+                // const categoryValues = prevTodos[categoryName];
+                // updatedState[newCategoryName] = categoryValues;
+                // delete updatedState[categoryName];
+                // return updatedState;
+                const updatedState:TodoCategory = {}
+                Object.keys(prevTodos).forEach(key => {
+                    if(key === categoryName){
+                        updatedState[newCategoryName] = prevTodos[key];
+                    } else {
+                        updatedState[key] = prevTodos[key];
+                    }
+                })
+                console.log(prevTodos == updatedState);
+                return updatedState;
+            })
+        }
+    }
+
     return (
         <div>
             <NewCategory onAdd={categoryAddHandler} />
             {Object.keys(todoState).map((todo: keyof typeof todoState) =>
-                <>
-                    <Category key={todoState[todo].id}
-                        addTodo={todoAddHandler}
-                        items={todoState[todo].todos}
-                        onStatusUpdate={todoStatusUpdate}
-                        onDelete={todoDeleteHandler}
-                        categoryName={todo as string}
-                    />
-                </>
+
+                <Category key={todoState[todo].id}
+                    addTodo={todoAddHandler}
+                    items={todoState[todo].todos}
+                    onStatusUpdate={todoStatusUpdate}
+                    onDelete={todoDeleteHandler}
+                    categoryName={todo as string}
+                    editCategoryName={editCategoryNameHandler}
+                />
             )}
         </div>
     );

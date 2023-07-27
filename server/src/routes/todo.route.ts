@@ -11,6 +11,7 @@ router.put('/todo/update/:id', todoController.updateTodo);
 router.put('/todo/update/status/:categoryname/:id', todoController.updateTodoStatus);
 router.delete('/todo/delete/:categoryname/:id', todoController.deleteTodo);
 
-router.put('/category/create', todoController.createCategory);
+router.post('/category/create', todoController.createCategory);
+router.put('/category/edit/:categoryname', todoController.editCategory)
 
 export default router;
