@@ -9,7 +9,8 @@ import { TodoCategory } from "../models/todo";
 
 
 
-export const CategoryList: React.FC = () => {
+export const CategoryList: React.FC<{addMsg: (msg: string)=> void}> = ({addMsg}) => {
+
 
     const [todoState, setTodoState] = useState<TodoCategory>({});
 
@@ -37,6 +38,17 @@ export const CategoryList: React.FC = () => {
         }
         fetchData();
     }, []);
+
+    const isCategoryExist = (categoryName: string): boolean=> {
+        const lowerCaseCategoryName = categoryName.toLocaleLowerCase();
+        for(const category of Object.keys(todoState)){
+            if(category.toLocaleLowerCase() === lowerCaseCategoryName){
+                console.log('nanimo');
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     const todoAddHandler = async (categoryName: string, text: string) => {
@@ -113,6 +125,7 @@ export const CategoryList: React.FC = () => {
     }
 
     const categoryAddHandler = async (category: string) => {
+        if (isCategoryExist(category)) return addMsg('Category Name Already Exist...!')
         const url = 'http://localhost:5000/category/create';
         const res = await fetch(url, {
             method: 'PUT',
@@ -132,6 +145,35 @@ export const CategoryList: React.FC = () => {
     }
 
 
+<<<<<<< Updated upstream
+=======
+    const editCategoryNameHandler = async (categoryName: string, newCategoryName: string) => {
+        if(categoryName != newCategoryName && isCategoryExist(newCategoryName)) return addMsg('Category Name already Exist...!');
+        const url = `http://localhost:5000/category/edit/${categoryName}`;
+        const res = await fetch(url, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({newCategoryName})
+        })
+        if(res.ok) {
+            setTodoState(prevTodos => {
+                const updatedState:TodoCategory = {}
+                Object.keys(prevTodos).forEach(key => {
+                    if(key === categoryName){
+                        updatedState[newCategoryName] = prevTodos[key];
+                    } else {
+                        updatedState[key] = prevTodos[key];
+                    }
+                })
+                console.log(prevTodos == updatedState);
+                return updatedState;
+            })
+        }
+    }
+
+>>>>>>> Stashed changes
     return (
         <div>
             <NewCategory onAdd={categoryAddHandler} />
@@ -146,6 +188,7 @@ export const CategoryList: React.FC = () => {
                     />
                 </>
             )}
+
         </div>
     );
 }
