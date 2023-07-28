@@ -1,39 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 //importing components
 import { CategoryList } from './components/CategoryList';
 import { Message } from './components/Message';
 
+const messages: string[] = [];
 
 const App: React.FC = () => {
 
-  const [messages, setMessages] = useState<string[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [_newMsg, setnewMsg] = useState(false);
+  console.log(messages);
   const addNewMessage = (msg: string) => {
-    setMessages(prevMessages => [msg, ...prevMessages]);
+    messages.unshift(msg);
+    setnewMsg(prevstate => !prevstate);
+    removeLastMsg();
+  }
+  const removeLastMsg = ()=> {
+    setTimeout(()=> {
+      if(messages.length > 0) {
+        messages.pop();
+        setnewMsg(prev => !prev);
+        if(messages.length > 0) removeLastMsg();
+      }
+    }, 6000)
   }
 
-  useEffect(() => {
-    console.log('Inside useEffect');
-    const removeLastMsg = () => {
-      console.log('hi');
-      if (messages.length > 0) {
-        setMessages(prevMessages => prevMessages.slice(0, -1));
-      }
-    }
-    intervalRef.current = setInterval(removeLastMsg, 10000);
-    return () => {
-      if(intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [])
 
   return (
     <div className='app'>
       <h1 className='text-3xl font-bold underline'>TODO</h1>
+      <div>
       <CategoryList addMsg={addNewMessage} />
+      </div>
       <div className='flex flex-col-reverse items-end fixed bottom-4 right-4 gap-4'>
         {messages.map(msg => <Message msg={msg} />)}
       </div>
