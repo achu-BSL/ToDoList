@@ -9,7 +9,8 @@ import { TodoCategory } from "../models/todo";
 
 
 
-export const CategoryList: React.FC = () => {
+export const CategoryList: React.FC<{addMsg: (msg: string)=> void}> = ({addMsg}) => {
+
 
     const [todoState, setTodoState] = useState<TodoCategory>({});
 
@@ -20,6 +21,7 @@ export const CategoryList: React.FC = () => {
                 const res = await fetch(url, { method: 'GET' });
                 if (res.ok) {
                     const data: { todos: Todo[], categoryName: string, category_id: string }[] = await res.json();
+                    console.log(data);
                     setTodoState(prevTodos => {
                         const todos: TodoCategory = {};
                         data.forEach(todo => {
@@ -38,9 +40,24 @@ export const CategoryList: React.FC = () => {
         fetchData();
     }, []);
 
+    const isCategoryExist = (categoryName: string): boolean=> {
+        const lowerCaseCategoryName = categoryName.toLocaleLowerCase();
+        for(const category of Object.keys(todoState)){
+            if(category.toLocaleLowerCase() === lowerCaseCategoryName){
+                console.log('nanimo');
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const isEmpty = (text: string)=> {
+        return text.trim().length === 0;
+    }
+
 
     const todoAddHandler = async (categoryName: string, text: string) => {
-        console.log("hi");
+        if(isEmpty(text)) return addMsg("Todo can't be empty");
         const url = `http://localhost:5000/todo/add/${categoryName}`;
         const body = { text };
         const res = await fetch(url, {
@@ -65,8 +82,9 @@ export const CategoryList: React.FC = () => {
                 console.log(updatedState[categoryName].todos.length);
                 return updatedState;
             });
+            addMsg("Todo added successfully.");
         }
-        else console.log("Opps something wrong..");
+        else addMsg("Opps something wrong..");
     }
 
     const todoDeleteHandler = async (category: string, todoId: string) => {
@@ -80,10 +98,10 @@ export const CategoryList: React.FC = () => {
                 updatedState[category].todos = updatedState[category].todos.filter(todo => todo.id !== todoId);
                 return updatedState;
             });
-            console.log("Deleted Successfully...");
+            addMsg("Todo Deleted Successfully...");
         }
         else {
-            console.log("OPPS Something wrong...");
+            addMsg("OPPS Something wrong...");
         }
     }
 
@@ -109,10 +127,13 @@ export const CategoryList: React.FC = () => {
                 })
                 return updatedState;
             })
-        } else console.log("OPPS Something wrong");
+            addMsg(status === 'Completed' ? 'Congratulations': 'Take your time');
+        } else addMsg("OPPS Something wrong");
     }
 
     const categoryAddHandler = async (category: string) => {
+        if (isCategoryExist(category)) return addMsg('Category Name Already Exist...!')
+        if(isEmpty(category)) return addMsg("Category name cant'be empty..!");
         const url = 'http://localhost:5000/category/create';
         const res = await fetch(url, {
             method: 'PUT',
@@ -128,24 +149,57 @@ export const CategoryList: React.FC = () => {
                 updatedTodoState[category] = {todos: [], id: newCategory.category_id}
                 return updatedTodoState;
             })
+            addMsg('New Category added successfully..');
         }
     }
 
+    const editCategoryNameHandler = async (categoryName: string, newCategoryName: string) => {
+        if(categoryName.trim() === newCategoryName.trim()) return;
+        if(isCategoryExist(newCategoryName)) return addMsg('Category Name already Exist...!');
+        if(isEmpty(newCategoryName)) return addMsg("Category name cant'be empty");
+        const url = `http://localhost:5000/category/edit/${categoryName}`;
+        const res = await fetch(url, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({newCategoryName})
+        })
+        if(res.ok) {
+            setTodoState(prevTodos => {
+                const updatedState:TodoCategory = {}
+                Object.keys(prevTodos).forEach(key => {
+                    if(key === categoryName){
+                        updatedState[newCategoryName] = prevTodos[key];
+                    } else {
+                        updatedState[key] = prevTodos[key];
+                    }
+                })
+                console.log(prevTodos == updatedState);
+                return updatedState;
+            })
+            addMsg('Changed category name');
+        } else addMsg("OPPS something went wrong..!");
+    }
 
     return (
-        <div>
+        <>
             <NewCategory onAdd={categoryAddHandler} />
+            <div className='flex gap-5 px-10 flex-wrap justify-center'>
+
             {Object.keys(todoState).map((todo: keyof typeof todoState) =>
-                <>
+        
                     <Category key={todoState[todo].id}
                         addTodo={todoAddHandler}
                         items={todoState[todo].todos}
                         onStatusUpdate={todoStatusUpdate}
                         onDelete={todoDeleteHandler}
                         categoryName={todo as string}
-                    />
-                </>
-            )}
-        </div>
+                        onTitleEdit={editCategoryNameHandler}
+                        />
+                        )}
+            </div>
+
+        </>
     );
 }

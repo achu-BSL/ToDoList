@@ -1,25 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-
-//importing models
-import { Todo } from './models/todo';
 
 //importing components
 import { CategoryList } from './components/CategoryList';
+import { Message } from './components/Message';
 
+const messages: string[] = [];
 
 const App: React.FC = () => {
 
-  const [categories, setCategories] = useState<Todo[]>([]);
-
-
-
+  const [_newMsg, setnewMsg] = useState(false);
+  console.log(messages);
+  const addNewMessage = (msg: string) => {
+    messages.unshift(msg);
+    setnewMsg(prevstate => !prevstate);
+    removeLastMsg();
+  }
+  const removeLastMsg = ()=> {
+    setTimeout(()=> {
+      if(messages.length > 0) {
+        messages.pop();
+        setnewMsg(prev => !prev);
+        if(messages.length > 0) removeLastMsg();
+      }
+    }, 6000)
+  }
 
 
   return (
     <div className='app'>
-      <h1>TODO</h1>
-      <CategoryList />
+      <h1 className='text-3xl font-bold underline'>TODO</h1>
+      <div>
+      <CategoryList addMsg={addNewMessage} />
+      </div>
+      <div className='flex flex-col-reverse items-end fixed bottom-4 right-4 gap-4'>
+        {messages.map(msg => <Message msg={msg} />)}
+      </div>
     </div>
   )
 }

@@ -36,6 +36,7 @@ export const addTodo: RequestHandler = async (req, res, next) => {
         await TodoModel.updateOne({categoryName: categoryname}, {$push: {todos: newTodo}});
         res.status(201).send({...newTodo, isCompleted: false});
     } catch (err) {
+        console.log(err);
       next(err);  
     }
 }
@@ -96,5 +97,19 @@ export const createCategory: RequestHandler = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         next(err);
+    }
+}
+
+
+//localhost:5000/category/edit/:categoryname
+//@method PUT
+export const changeCategoryName: RequestHandler = async (req, res) => {
+    try {
+        const {categoryname} = req.params;
+        const {newCategoryName} = req.body;
+        await TodoModel.updateOne({categoryName: categoryname}, {$set: {categoryName: newCategoryName}});
+        res.status(200).send("Category name updated");
+    } catch (err) {
+
     }
 }
