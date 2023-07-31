@@ -2,18 +2,19 @@ import React, { useRef } from "react";
 
 
 import './NewTodo.css'
+import { useTodoList } from "../context/TodoListContext";
 
 interface NewTodoProps {
-    addTodo: (text: string) => void;
+    categoryName: string;
 }
 
 const NewTodo: React.FC<NewTodoProps> = (props) => {
-
+    const { addTodo } = useTodoList();
     const textInput = useRef<HTMLInputElement>(null);
 
     const submitHandler: React.FormEventHandler = (event: React.FormEvent) => {
         event.preventDefault();
-        props.addTodo(textInput.current!.value);
+        addTodo(props.categoryName, textInput.current!.value);
         textInput.current!.value = '';
     }
 

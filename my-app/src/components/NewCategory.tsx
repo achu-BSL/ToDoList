@@ -1,17 +1,17 @@
 import React, {useRef} from "react";
+import { useTodoList } from "../context/TodoListContext";
 
-interface NewCategoryProps {
-    onAdd: (title: string) => void;
-}
 
-export const NewCategory: React.FC<NewCategoryProps> = (props) => {
+export const NewCategory: React.FC= () => {
+
+    const { addCategory } = useTodoList();
 
     const titleInput = useRef<HTMLInputElement>(null);
 
     const submitEventHandler: React.FormEventHandler = (event: React.FormEvent)=> {
         event.preventDefault();
         const title = titleInput.current!.value;
-        props.onAdd(title);
+        addCategory(title);
         titleInput.current!.value = '';
     }
 
