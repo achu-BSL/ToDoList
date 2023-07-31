@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import './App.css';
+import { TodoListProvider } from "./context/TodoListContext";
+
 
 //importing components
 import { CategoryList } from './components/CategoryList';
@@ -16,12 +18,12 @@ const App: React.FC = () => {
     setnewMsg(prevstate => !prevstate);
     removeLastMsg();
   }
-  const removeLastMsg = ()=> {
-    setTimeout(()=> {
-      if(messages.length > 0) {
+  const removeLastMsg = () => {
+    setTimeout(() => {
+      if (messages.length > 0) {
         messages.pop();
         setnewMsg(prev => !prev);
-        if(messages.length > 0) removeLastMsg();
+        if (messages.length > 0) removeLastMsg();
       }
     }, 6000)
   }
@@ -30,9 +32,10 @@ const App: React.FC = () => {
   return (
     <div className='app'>
       <h1 className='text-3xl font-bold underline'>TODO</h1>
-      <div>
-      <CategoryList addMsg={addNewMessage} />
-      </div>
+      <TodoListProvider addMsg={addNewMessage}>
+        <CategoryList />
+        </TodoListProvider>
+
       <div className='flex flex-col-reverse items-end fixed bottom-4 right-4 gap-4'>
         {messages.map(msg => <Message msg={msg} />)}
       </div>
