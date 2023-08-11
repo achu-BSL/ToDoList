@@ -10,7 +10,6 @@ import { useTodoList } from "../context/TodoListContext";
 export const CategoryList: React.FC = () => {
 
     const { state } = useTodoList();
-    console.log(state, " ⭐");
 
 
     return (

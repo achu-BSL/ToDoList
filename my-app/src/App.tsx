@@ -12,7 +12,6 @@ const messages: string[] = [];
 const App: React.FC = () => {
 
   const [_newMsg, setnewMsg] = useState(false);
-  console.log(messages);
   const addNewMessage = (msg: string) => {
     messages.unshift(msg);
     setnewMsg(prevstate => !prevstate);

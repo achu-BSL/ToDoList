@@ -35,7 +35,7 @@ export const TodoListProvider = ({children, addMsg}: TodoListProviderProps)=> {
                 const res = await fetch(url, { method: 'GET' });
                 if (res.ok) {
                     const data: { todos: Todo[], categoryName: string, category_id: string }[] = await res.json();
-                    console.log(data, " ⚡");
+                    // console.log(data, " ⚡");
                     setState(prevTodos => {
                         const todos: TodoCategory = {};
                         data.forEach(todo => {
@@ -131,7 +131,6 @@ export const TodoListProvider = ({children, addMsg}: TodoListProviderProps)=> {
     }
 
     const addCategory = async (category: string) => {
-        console.log("🙌 from addcategory hadler..");
         if (isCategoryExist(state, category)) return addMsg('Category Name Already Exist...!')
         if(isEmpty(category)) return addMsg("Category name cant'be empty..!");
         const url = 'http://localhost:5000/category/create';

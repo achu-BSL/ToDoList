@@ -27,8 +27,6 @@ const NewTodo: React.FC<NewTodoProps> = (props) => {
                     <span className="relative">+</span>
                 </button>
             </div>
-
-
         </form>
     );
 }
